@@ -8,6 +8,7 @@
 <script>
 import Todos from "../components/Todos";
 import AddTodo from "../components/AddTodo";
+import firebase from "../Firebase";
 import axios from "axios";
 export default {
   name: "home",
@@ -17,28 +18,39 @@ export default {
   },
   data() {
     return {
-      todos: []
+      todos: [],
+      ref: firebase.firestore().collection("todos")
     };
   },
   methods: {
     deleteTodo(id) {
-      axios
-        .delete(`https://jsonplaceholder.typicode.com/todos/${id}`)
+      console.log(id);
+      firebase
+        .firestore()
+        .collection("todos")
+        .doc(id)
+        .delete()
         .then(() => (this.todos = this.todos.filter(todo => todo.id !== id)));
     },
     addTodo(newTodo) {
-      axios
-        .post("https://jsonplaceholder.typicode.com/todos", newTodo)
-        .then(res => (this.todos = [res.data, ...this.todos]));
-      // .catch(err => console.log(err));
-      // this.todos = [newTodo, ...this.todos];
+      firebase
+        .firestore()
+        .collection("todos")
+        .add(newTodo);
     }
   },
   created() {
-    axios
-      .get("https://jsonplaceholder.typicode.com/todos?_limit=5")
-      .then(res => (this.todos = res.data));
-    // .catch(err => console.log(err));
+    axios;
+    this.ref.onSnapshot(querySnapshot => {
+      this.todos = [];
+      querySnapshot.forEach(doc => {
+        this.todos.push({
+          id: doc.id,
+          title: doc.data().title,
+          completed: doc.data().completed
+        });
+      });
+    });
   }
 };
 </script>

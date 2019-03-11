@@ -8,12 +8,19 @@
   </div>
 </template>
 <script>
+import firebase from "../Firebase";
+
 export default {
   name: "TodoItem",
   props: ["todo"],
   methods: {
     markComplete() {
       this.todo.completed = !this.todo.completed;
+      const updateRef = firebase
+        .firestore()
+        .collection("todos")
+        .doc(this.todo.id)
+        .set(this.todo);
     }
   }
 };
